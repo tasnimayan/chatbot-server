@@ -8,6 +8,7 @@ import { authenticate } from "./src/middlewares/auth";
 import { GraphQLContext } from "./src/types";
 import { loadJsonData } from "./src/utils/loadJsonData";
 import { resolvers } from "./src/resolvers";
+import { createUserAuthToken } from "./src/controller/jwtTokenGenerator";
 
 async function startServer() {
   // Express app
@@ -31,6 +32,7 @@ async function startServer() {
     })
   );
   app.use(express.json({ limit: "10mb" }));
+  app.post("/auth/generate-token", createUserAuthToken);
 
   // Create Apollo Server
   const server = new ApolloServer({

@@ -77,6 +77,7 @@ export interface AuthToken {
   userId: string;
   name: string;
   permissions: string[];
+  createdAt?: string;
 }
 
 export interface User {
