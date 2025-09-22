@@ -1,22 +1,41 @@
 import { ApolloServer } from "@apollo/server";
-import express, { json } from "express";
+import express from "express";
 import { expressMiddleware } from "@as-integrations/express5";
-const cors = require("cors");
-import dotenv from "dotenv";
+import cors from "cors";
 import { typeDefs } from "./src/schema";
-dotenv.config();
+import config from "./src/utils/config";
+import { authenticate } from "./src/middlewares/auth";
+import { GraphQLContext } from "./src/types";
+import { loadJsonData } from "./src/utils/loadJsonData";
+import { resolvers } from "./src/resolvers";
 
 async function startServer() {
   // Express app
   const app = express();
+  const data = loadJsonData();
 
   // Middlewares
-  app.use(cors());
+  app.use(
+    cors({
+      origin: "*",
+      // origin: (origin: string, callback: any) => {
+      //   if (!origin || config.ALLOWED_ORIGINS?.includes(origin)) {
+      //     callback(null, true);
+      //   } else {
+      //     callback(new Error("Not allowed by CORS"));
+      //   }
+      // },
+      credentials: true,
+      methods: ["GET", "POST"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  );
+  app.use(express.json({ limit: "10mb" }));
 
   // Create Apollo Server
   const server = new ApolloServer({
     typeDefs,
-    resolvers: {},
+    resolvers,
     formatError: (error) => {
       console.error("GraphQL Error:", error);
       return {
@@ -29,23 +48,24 @@ async function startServer() {
 
   await server.start();
 
-  // Apply middleware
+  // Apollo Server middleware
   app.use(
     "/graphql",
-    cors(),
-    json(),
     expressMiddleware(server, {
-      context: async ({ req }) => {
-        const token = req.headers.authorization?.split(" ")[1];
-        return { token };
+      context: async ({ req }): Promise<GraphQLContext> => {
+        // Add authentication to context
+        const user = authenticate(req);
+        return {
+          data,
+          user,
+          isAuthenticated: !!user,
+        };
       },
     })
   );
 
-  const PORT = process.env.PORT || 4000;
-
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}/graphql`);
+  app.listen(config.PORT, () => {
+    console.log(`Server running on http://localhost:${config.PORT}/graphql`);
   });
 }
 
