@@ -8,7 +8,7 @@ import { authenticate } from "./src/middlewares/auth";
 import { GraphQLContext } from "./src/types";
 import { loadJsonData } from "./src/utils/loadJsonData";
 import { resolvers } from "./src/resolvers";
-import { createUserAuthToken } from "./src/controller/jwtTokenGenerator";
+import { createUserAuthToken } from "./src/controller/tokenController";
 
 async function startServer() {
   // Express app

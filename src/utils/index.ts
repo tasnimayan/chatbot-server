@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import { Logger } from "./logger";
 
 // Load and parse JSON data files
 function parseJsonFile<T>(filename: string): T[] {
@@ -8,7 +9,7 @@ function parseJsonFile<T>(filename: string): T[] {
     const fileContent = fs.readFileSync(filePath, "utf8");
     return JSON.parse(fileContent) as T[];
   } catch (error) {
-    console.error(`Error loading ${filename}:`, (error as Error).message);
+    Logger.error(`Error loading ${filename}:`, (error as Error).message);
     return [];
   }
 }

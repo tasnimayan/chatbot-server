@@ -77,7 +77,7 @@ export interface AuthToken {
   userId: string;
   name: string;
   permissions: string[];
-  createdAt?: string;
+  createdAt: string;
 }
 
 export interface User {
@@ -99,4 +99,8 @@ export interface GraphQLContext {
   data: AppData;
   user: User | null;
   isAuthenticated: boolean;
+}
+
+export interface QueryArgs {
+  nodeId?: string;
 }

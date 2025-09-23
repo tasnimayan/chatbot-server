@@ -5,6 +5,7 @@ import fs from "fs";
 import { Request, Response } from "express";
 import { randomBytes } from "crypto";
 import { AuthToken } from "../types";
+import { Logger } from "../utils/logger";
 
 const createUserAuthToken = (req: Request, res: Response) => {
   try {
@@ -17,7 +18,9 @@ const createUserAuthToken = (req: Request, res: Response) => {
     const userId = randomBytes(8).toString("hex"); // generates 16 characters unique UUID
 
     if (!name) {
-      return res.status(400).json({ success: false, error: "name and permissions are required" });
+      return res
+        .status(400)
+        .json({ success: false, error: "name is required" });
     }
 
     // Create JWT
@@ -27,7 +30,7 @@ const createUserAuthToken = (req: Request, res: Response) => {
     const tokenEntry = {
       userId,
       name,
-      permissions,
+      permissions: permissions || ["read"],
       token,
       createdAt: new Date().toISOString(),
     };
@@ -46,8 +49,10 @@ const createUserAuthToken = (req: Request, res: Response) => {
 
     return res.json({ success: true, data: tokenEntry });
   } catch (err: any) {
-    console.error("Token generation failed:", err);
-    return res.status(500).json({ success: false, error: "Internal server error" });
+    Logger.error("Token generation failed:", err);
+    return res
+      .status(500)
+      .json({ success: false, error: "Internal server error" });
   }
 };
 

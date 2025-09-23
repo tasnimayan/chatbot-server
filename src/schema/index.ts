@@ -82,15 +82,8 @@ export const typeDefs = `#graphql
     colour: String
   }
 
-  # type Query {
-  #   node(nodeId: ID): NodeObject
-  # }
   type Query {
     node(nodeId: ID): NodeObject
     nodes: [NodeObject]
-    actions: [Action]
-    triggers: [Trigger]
-    responses: [Response]
-    resourceTemplates: [ResourceTemplate]
-  } 
+  }
 `;

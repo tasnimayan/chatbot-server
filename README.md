@@ -12,6 +12,17 @@ To get started, follow these steps:
 
 ## Usage
 
+To generate a token, you can send a POST request to `http://localhost:8000/auth/generate-token`.
+Add X-API-KEY header with value of your API_KEY environment variable.
+Please provide the following JSON in the request body:
+
+```json
+{
+  "name": "John Doe",
+  "permissions": ["read", "write"]
+}
+```
+
 To use the chatbot server, you can send Graphql queries to `http://localhost:8000/graphql`. The server supports the following queries:
 
 - `nodes`: Retrieves all nodes.

@@ -1,6 +1,7 @@
 import { Request } from "express";
 import { User, AuthToken } from "../types";
 import { parseJsonFile } from "../utils";
+import { Logger } from "../utils/logger";
 
 // Extract Bearer token from header
 function extractToken(authHeader: string | undefined) {
@@ -27,18 +28,16 @@ export function authenticate(req: Request): User | null {
     const validToken = tokens.find((t) => t.token === token);
 
     if (!validToken) {
-      console.log("Invalid token provided");
       return null;
     }
 
-    console.log(`Authenticated user: ${validToken.userId || "Unknown"}`);
     return {
       id: validToken.userId,
       token: validToken.token,
       permissions: validToken.permissions || [],
     };
   } catch (error) {
-    console.error("Authentication error:", (error as Error).message);
+    Logger.error("Authentication error:", (error as Error).message);
     return null;
   }
 }
