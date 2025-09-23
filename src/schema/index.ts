@@ -83,7 +83,7 @@ export const typeDefs = `#graphql
   }
 
   type Query {
-    node(nodeId: ID): NodeObject
-    nodes: [NodeObject]
+    node(nodeId: ID!): NodeObject
+    nodes(limit: Int, offset: Int): [NodeObject]
   }
 `;

@@ -7,8 +7,11 @@ import {
   Trigger,
   Response,
   ResourceTemplate,
+  PaginationArgs,
 } from "../types";
 import { JSONType, LongType } from "./customScalers";
+
+const MAX_LIMIT = 500;
 
 // Authentication helper
 const requireAuth = (context: GraphQLContext): void => {
@@ -20,6 +23,20 @@ const requireAuth = (context: GraphQLContext): void => {
       },
     });
   }
+};
+
+const sanitizeNonNegative = (n: number | undefined, fallback: number) => {
+  const v = typeof n === "number" && Number.isFinite(n) ? n : fallback;
+  return v < 0 ? 0 : v;
+};
+
+const paginate = <T>(arr: T[], { limit, offset }: PaginationArgs): T[] => {
+  const safeOffset = sanitizeNonNegative(offset, 0);
+  const safeLimit = sanitizeNonNegative(
+    typeof limit === "number" ? Math.min(limit, MAX_LIMIT) : MAX_LIMIT,
+    MAX_LIMIT
+  );
+  return arr.slice(safeOffset, safeOffset + safeLimit);
 };
 
 export const resolvers = {
@@ -41,25 +58,31 @@ export const resolvers = {
       return context.data.nodes.find((node) => node._id === nodeId) || null;
     },
 
-    nodes: (parent: any, args: any, context: GraphQLContext): NodeObject[] => {
+    nodes: (
+      parent: any,
+      args: PaginationArgs,
+      context: GraphQLContext
+    ): NodeObject[] => {
       requireAuth(context);
-      return context.data.nodes;
+      return paginate(context.data.nodes, args);
     },
   },
 
   NodeObject: {
     parents: (
       parent: NodeObject,
-      args: any,
+      args: PaginationArgs,
       context: GraphQLContext
     ): NodeObject[] => {
       if (!parent.parentIds || parent.parentIds.length === 0) {
         return [];
       }
 
-      return context.data.nodes.filter((node) =>
+      const list = context.data.nodes.filter((node) =>
         parent.parentIds!.includes(node.compositeId)
       );
+
+      return paginate(list, args);
     },
 
     trigger: (
@@ -80,46 +103,48 @@ export const resolvers = {
 
     responses: (
       parent: NodeObject,
-      args: any,
+      args: PaginationArgs,
       context: GraphQLContext
     ): Response[] => {
       if (!parent.responseIds || parent.responseIds.length === 0) {
         return [];
       }
 
-      return context.data.responses.filter((response) =>
+      const list = context.data.responses.filter((response) =>
         parent.responseIds!.includes(response._id)
       );
+      return paginate(list, args);
     },
 
     actions: (
       parent: NodeObject,
-      args: any,
+      args: PaginationArgs,
       context: GraphQLContext
     ): Action[] => {
       if (!parent.actionIds || parent.actionIds.length === 0) {
         return [];
       }
 
-      return context.data.actions.filter((action) =>
+      const list = context.data.actions.filter((action) =>
         parent.actionIds!.includes(action._id)
       );
+      return paginate(list, args);
     },
   },
 
   Response: {
     platforms: (
       parent: Response,
-      args: any,
+      args: PaginationArgs,
       context: GraphQLContext
     ): any[] => {
-      return parent.platforms || [];
+      const list = parent.platforms || [];
+      return paginate(list, args);
     },
   },
 
   ResponsePlatform: {
     localeGroups: (parent: any, args: any, context: GraphQLContext): any[] => {
-      // Handle both 'localeGroups' and 'localeGroup' properties from the data
       if (parent.localeGroups) {
         return parent.localeGroups.map((group: any) => ({
           localeGroupId: group.localeGroup || group.localeGroupId,

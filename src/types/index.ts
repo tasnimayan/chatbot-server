@@ -104,3 +104,8 @@ export interface GraphQLContext {
 export interface QueryArgs {
   nodeId?: string;
 }
+
+export interface PaginationArgs {
+  limit?: number;
+  offset?: number;
+}

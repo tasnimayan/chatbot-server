@@ -9,6 +9,8 @@ import { GraphQLContext } from "./src/types";
 import { loadJsonData } from "./src/utils/loadJsonData";
 import { resolvers } from "./src/resolvers";
 import { createUserAuthToken } from "./src/controller/tokenController";
+import { Logger } from "./src/utils/logger";
+import { createRateLimiter } from "./src/middlewares/rateLimiter";
 
 async function startServer() {
   // Express app
@@ -32,6 +34,9 @@ async function startServer() {
     })
   );
   app.use(express.json({ limit: "10mb" }));
+  app.use(createRateLimiter());
+
+  // Route for generating and storing authentication jwt token
   app.post("/auth/generate-token", createUserAuthToken);
 
   // Create Apollo Server
@@ -39,7 +44,7 @@ async function startServer() {
     typeDefs,
     resolvers,
     formatError: (error) => {
-      console.error("GraphQL Error:", error);
+      Logger.error("GraphQL Error:", error);
       return {
         message: error.message,
         code: error.extensions?.code || "INTERNAL_ERROR",
@@ -55,7 +60,7 @@ async function startServer() {
     "/graphql",
     expressMiddleware(server, {
       context: async ({ req }): Promise<GraphQLContext> => {
-        // Add authentication to context
+        // Add data and authentication context
         const user = authenticate(req);
         return {
           data,
@@ -73,16 +78,16 @@ async function startServer() {
 
 // Handle uncaught exceptions
 process.on("uncaughtException", (error: Error) => {
-  console.error("Uncaught Exception:", error);
+  Logger.error("Uncaught Exception", error);
   process.exit(1);
 });
 
 process.on("unhandledRejection", (error: Error) => {
-  console.error("Unhandled Rejection:", error);
+  Logger.error("Unhandled Rejection:", error);
   process.exit(1);
 });
 
 startServer().catch((error: Error) => {
-  console.error("Failed to start server:", error);
+  Logger.error("Failed to start server:", error);
   process.exit(1);
 });
