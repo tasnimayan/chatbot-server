@@ -5,9 +5,9 @@ import fs from "fs";
 import { Request, Response } from "express";
 import { randomBytes } from "crypto";
 import { AuthToken } from "../types";
-import { Logger } from "../utils/logger";
+import Logger from "../utils/logger";
 
-const createUserAuthToken = (req: Request, res: Response) => {
+const createUserAuthToken = async (req: Request, res: Response) => {
   try {
     const apiKeyHeader = req.headers["x-api-key"];
     if (!apiKeyHeader || apiKeyHeader !== config.API_KEY) {

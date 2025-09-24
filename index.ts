@@ -9,8 +9,9 @@ import { GraphQLContext } from "./src/types";
 import { loadJsonData } from "./src/utils/loadJsonData";
 import { resolvers } from "./src/resolvers";
 import { createUserAuthToken } from "./src/controller/tokenController";
-import { Logger } from "./src/utils/logger";
+import Logger from "./src/utils/logger";
 import { createRateLimiter } from "./src/middlewares/rateLimiter";
+import depthLimit from "graphql-depth-limit";
 
 async function startServer() {
   // Express app
@@ -28,7 +29,7 @@ async function startServer() {
       //     callback(new Error("Not allowed by CORS"));
       //   }
       // },
-      credentials: true,
+      credentials: false, // true if need cookies
       methods: ["GET", "POST"],
       allowedHeaders: ["Content-Type", "Authorization"],
     })
@@ -38,6 +39,9 @@ async function startServer() {
 
   // Route for generating and storing authentication jwt token
   app.post("/auth/generate-token", createUserAuthToken);
+  app.get("/healthz", async (req, res) =>
+    res.json({ status: "ok", uptime: process.uptime() })
+  );
 
   // Create Apollo Server
   const server = new ApolloServer({
@@ -51,6 +55,7 @@ async function startServer() {
         path: error.path,
       };
     },
+    validationRules: [depthLimit(config.GRAPHQL_DEPTH_LIMIT)],
   });
 
   await server.start();

@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { Logger } from "./logger";
+import Logger from "./logger";
 
 // Load and parse JSON data files
 function parseJsonFile<T>(filename: string): T[] {

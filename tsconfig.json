@@ -14,7 +14,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "removeComments": false,
-    "noImplicitAny": false, // set true for strict type
+    "noImplicitAny": true, // set true for strict type
     "strictNullChecks": false, //
     "strictFunctionTypes": true
   },

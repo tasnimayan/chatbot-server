@@ -1,7 +1,8 @@
 import fs from "fs";
 import path from "path";
+import pino from "pino";
 
-export class Logger {
+class Logger {
   private static logDir = path.join(process.cwd(), "logs");
 
   static init() {
@@ -10,26 +11,52 @@ export class Logger {
     }
   }
 
-  private static writeToFile(level: string, message: string, meta?: any) {
-    const timestamp = new Date().toISOString();
-    const logEntry = {
-      timestamp,
-      level,
-      message,
-      ...(meta && { meta }),
-    };
+  private static streams = pino.multistream([
+    {
+      level: "info",
+      stream: fs.createWriteStream(path.join(Logger.logDir, "info.log"), {
+        flags: "a",
+      }),
+    },
+    {
+      level: "warn",
+      stream: fs.createWriteStream(path.join(Logger.logDir, "warn.log"), {
+        flags: "a",
+      }),
+    },
+    {
+      level: "error",
+      stream: fs.createWriteStream(path.join(Logger.logDir, "error.log"), {
+        flags: "a",
+      }),
+    },
+    { level: "info", stream: process.stdout }, // console output for all logs
+  ]);
 
-    const logFile = path.join(this.logDir, `${level}.log`);
-    fs.appendFileSync(logFile, JSON.stringify(logEntry) + "\n");
-  }
-
+  private static logger = pino(
+    {
+      base: null, // removes default pid/hostname
+      timestamp: pino.stdTimeFunctions.isoTime,
+      formatters: {
+        level(label) {
+          return { level: label.toUpperCase() };
+        },
+      },
+    },
+    Logger.streams
+  );
   static info(message: string, meta?: any) {
-    console.log(`[INFO] ${message}`, meta || "");
-    this.writeToFile("info", message, meta);
+    Logger.logger.info(meta || {}, message);
   }
 
-  static error(message: string, error?: any) {
-    console.error(`[ERROR] ${message}`, error || "");
-    this.writeToFile("error", message, error);
+  static warn(message: string, meta?: any) {
+    Logger.logger.warn(meta || {}, message);
+  }
+
+  static error(message: string, meta?: any) {
+    Logger.logger.error(meta || {}, message);
   }
 }
+
+Logger.init();
+export default Logger;

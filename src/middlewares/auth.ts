@@ -1,7 +1,7 @@
 import { Request } from "express";
 import { User, AuthToken } from "../types";
 import { parseJsonFile } from "../utils";
-import { Logger } from "../utils/logger";
+import Logger from "../utils/logger";
 
 // Extract Bearer token from header
 function extractToken(authHeader: string | undefined) {
