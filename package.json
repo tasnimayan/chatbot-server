@@ -7,8 +7,9 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "start": "npm run build && node ./dist/index.js",
+    "start": "ts-node index.ts",
     "dev": "nodemon index.ts",
+    "start:prod": "npm run build && node ./dist/index.js",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -17,7 +17,7 @@ To get started, follow these steps:
 1. Clone the repository
 2. Install the dependencies by running `npm install`
 3. Start the development server by running `npm run dev`
-4. To build and run for production `npm run start`
+4. To build and run for production `npm run start:prod`
 
 ## Usage
 
